@@ -9,6 +9,7 @@ export interface Options {
     useBom: boolean;
     headers: string[];
     noDownload: boolean;
+    encoding: string;
 }
 
 export class CsvConfigConsts {
@@ -26,7 +27,7 @@ export class CsvConfigConsts {
     public static DEFAULT_USE_BOM = true;
     public static DEFAULT_HEADER: any[] = [];
     public static DEFAULT_NO_DOWNLOAD = false;
-
+    public static DEFAULT_ENCODING = 'UTF-8';
 }
 
 export const ConfigDefaults: Options = {
@@ -39,7 +40,8 @@ export const ConfigDefaults: Options = {
     title: CsvConfigConsts.DEFAULT_TITLE,
     useBom: CsvConfigConsts.DEFAULT_USE_BOM,
     headers: CsvConfigConsts.DEFAULT_HEADER,
-    noDownload: CsvConfigConsts.DEFAULT_NO_DOWNLOAD
+    noDownload: CsvConfigConsts.DEFAULT_NO_DOWNLOAD,
+    encoding: CsvConfigConsts.DEFAULT_ENCODING
 };
 
 export class ngxCsv {
@@ -89,13 +91,13 @@ export class ngxCsv {
             return this.csv;
         }
 
-        let blob = new Blob([this.csv], {"type": "text/csv;charset=utf8;"});
+        let blob = new Blob([this.csv], {"type": "text/csv;charset=" + this._options.encoding + ";"});
 
         if (navigator.msSaveBlob) {
             let filename = this._options.filename.replace(/ /g, "_") + ".csv";
             navigator.msSaveBlob(blob, filename);
         } else {
-            let uri = 'data:attachment/csv;charset=utf-8,' + encodeURI(this.csv);
+            let uri = 'data:attachment/csv;charset=' + this._options.encoding + ',' + encodeURI(this.csv);
             let link = document.createElement("a");
 
             link.href = URL.createObjectURL(blob);
@@ -113,14 +115,14 @@ export class ngxCsv {
      * Create Headers
      */
     getHeaders(): void {
-      if (this._options.headers.length > 0) {
-          const { headers } = this._options;
-          let row = headers.reduce((headerRow, header) => {
-              return headerRow + header + this._options.fieldSeparator;
-          }, '');
-          row = row.slice(0, -1);
-          this.csv += row + CsvConfigConsts.EOL;
-      }
+        if (this._options.headers.length > 0) {
+            const { headers } = this._options;
+            let row = headers.reduce((headerRow, header) => {
+                return headerRow + header + this._options.fieldSeparator;
+            }, '');
+            row = row.slice(0, -1);
+            this.csv += row + CsvConfigConsts.EOL;
+        }
     }
 
     /**
